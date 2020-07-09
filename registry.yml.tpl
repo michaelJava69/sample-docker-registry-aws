@@ -23,7 +23,7 @@ storage:
     region: "${region}"
     bucket: "${bucket}"
 http:
-  addr: ":5000"
+  addr: "localhost:5000"
   secret: "a-secret"
   debug:
     addr: ":5001"

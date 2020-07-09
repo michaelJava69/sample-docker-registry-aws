@@ -41,7 +41,7 @@ resource "aws_security_group" "allow-registry-ingress" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags {
+  tags = {
     Name = "allow_registry-ingress"
   }
 }
@@ -67,7 +67,7 @@ resource "aws_security_group" "allow-ssh-and-egress" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags {
+  tags = {
     Name = "allow_ssh-and-egress"
   }
 }
@@ -81,7 +81,7 @@ resource "aws_security_group" "allow-ssh-and-egress" {
 data "template_file" "registry-config" {
   template = "${file("./registry.yml.tpl")}"
 
-  vars {
+  vars = {
     bucket = "${var.bucket}"
     region = "${var.region}"
   }
@@ -119,9 +119,14 @@ EOF
 resource "aws_instance" "main" {
   instance_type        = "t2.micro"
   ami                  = "${data.aws_ami.ubuntu.id}"
-  key_name             = "${aws_key_pair.main.id}"
+  # key_name             = "${aws_key_pair.main.id}"
+  key_name 		= "${var.key_name}"
   iam_instance_profile = "${aws_iam_instance_profile.main.name}"
   user_data            = "${data.template_cloudinit_config.init.rendered}"
+
+  tags = {
+     Name = "terraform-docker-registry"
+  }
 
   vpc_security_group_ids = [
     "${aws_security_group.allow-ssh-and-egress.id}",
