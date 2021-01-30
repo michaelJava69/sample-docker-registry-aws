@@ -45,6 +45,70 @@ conf_nginx_sblock() {
   "
   
 
+[ $(id -g) != "0" ] && die "Script must be run as root."
+[ $# != "1" ] && die "Usage: $(basename $0) domainName"
+
+# Create nginx config file
+cat > $NGINX_AVAILABLE_VHOSTS/ $MY_S1 <<EOF
+# www to non-www
+server {
+    # If user goes to www direc them to non www
+    server_name *.$MY_S1;
+    return 301 $NGINX_SCHEME:// $MY_S1 $NGINX_REQUEST_URI;
+}
+server {
+    # Just the server name
+    server_name $MY_S1;
+    root        /var/www/$MY_S1 /public_html;
+
+    # Logs
+    access_log $WEB_DIR/$MY_S1 /logs/access.log;
+    error_log  $WEB_DIR/$MY_S1 /logs/error.log;
+
+    # Includes
+    include global/common.conf;
+    include global/wordpress.conf;
+
+    # Listen to port 8080, cause of Varnis
+    # Must be defined after the common.conf include
+    #listen 127.0.0.1:8080;
+}
+EOF
+
+# Creating {public,log} directories
+mkdir -p $WEB_DIR/$MY_S1 /{public_html,logs}
+
+# Creating index.html file
+cat > $WEB_DIR/$MY_S1 /public_html/index.html <<EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>$MY_S1 </title>
+        <meta charset="utf-8" />
+</head>
+<body class="container">
+        <header><h1>$MY_S1 <h1></header>
+        <div id="wrapper">
+
+Hello World
+
+</div>
+        <footer>© $(date +%Y)</footer>
+</body>
+</html>
+EOF
+
+# Changing permissions
+chown -R $USER:$WEB_USER $WEB_DIR/$MY_S1
+
+# Enable site by creating symbolic link
+ln -s $NGINX_AVAILABLE_VHOSTS/$MY_S1 $NGINX_ENABLED_VHOSTS/$MY_S1
+
+
+# Restart
+/etc/init.d/nginx restart ; break;;
+ok "Site Created for $MY_S1 "
+
 
 
 }

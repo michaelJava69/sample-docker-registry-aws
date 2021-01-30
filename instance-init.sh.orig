@@ -13,7 +13,6 @@ main() {
   install_docker
   run_registry
   install_nginx
-  # conf_nginx_sblock
 }
 
 
@@ -33,22 +32,6 @@ install_docker() {
 
 
 }
-
-
-
-conf_nginx_sblock() {
-  echo "INFO:
-  Configuring  nginx sblock
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-.
-  "
-  
-
-
-
-}
-
 
 
 install_nginx() {
@@ -104,12 +87,5 @@ WEB_USER='www-data'
 USER='yourusername'
 NGINX_SCHEME='$scheme'
 NGINX_REQUEST_URI='$request_uri'
-
-# Functions
-ok() { echo -e '\e[32m'$MY_S1'\e[m'; } # Green
-die() { echo -e '\e[1;31m'$MY_S1'\e[m'; exit 1; }
-
-
-
 
 main

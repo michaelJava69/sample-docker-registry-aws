@@ -41,9 +41,6 @@ resource "aws_security_group" "allow-registry-ingress" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
-
-
   tags = {
     Name = "allow_registry-ingress"
   }
@@ -59,14 +56,6 @@ resource "aws_security_group" "allow-ssh-and-egress" {
   ingress {
     from_port   = 22
     to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -119,26 +108,12 @@ EOF
   }
 
 
+
   part {
     content_type = "text/x-shellscript"
     content      = "${file("./instance-init.sh")}"
   }
-
-
-
-
 }
-
-#resource null_resource "ansible_web" {
-#  depends_on = [
-#    "aws_instance.main"
-#  ]
-
-#  provisioner "local-exec" {
-#    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key '${var.ansible_pem_key}' -i '${aws_instance.main.public_ip},' ansible/main.yml"
-#  }
-#}
-
 
 # Create an instance in the default VPC with a specified
 # SSH key so we can properly SSH into it to verify whether
@@ -156,9 +131,9 @@ resource "aws_instance" "main" {
   }
 
 
-  provisioner "file" {
-    source      = "nginx_sblock.sh"
-    destination = "/tmp/nginx_sblock.sh"
+provisioner "file" {
+    source      = "dns.sh"
+    destination = "/tmp/dns.sh"
     # destination = "/var/lib/cloud/scripts/per-boot/dns.sh"
 
     connection {
@@ -171,14 +146,11 @@ resource "aws_instance" "main" {
 
   provisioner "remote-exec" {
     inline = [
-      "chmod u+x /tmp/nginx_sblock.sh",
-      "cd ..",
-      "cd ..",
-      "sleep 2m",
-      "sudo ./tmp/nginx_sblock.sh"
-
+      
+      "sudo cp /tmp/dns.sh /var/lib/cloud/scripts/per-boot/dns.sh",
+      "sudo chmod +x /var/lib/cloud/scripts/per-boot/dns.sh"
     ]
-
+    
     connection {
       type        = "ssh"
       user        = "ubuntu"
@@ -187,6 +159,8 @@ resource "aws_instance" "main" {
     }
 
   }
+
+
 
   vpc_security_group_ids = [
     "${aws_security_group.allow-ssh-and-egress.id}",

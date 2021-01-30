@@ -1,0 +1,10 @@
+- hosts: all
+  gather_facts: False
+  become: true
+
+  roles:
+    - server
+    - nginx
+    - ssl
+    - fluentd
+    - config
